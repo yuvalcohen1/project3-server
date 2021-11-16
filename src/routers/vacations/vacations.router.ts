@@ -1,7 +1,12 @@
 import { config } from "dotenv";
 import { Request, Response, Router } from "express";
 import expressJwt from "express-jwt";
-import { addVacation, deleteVacationById, getAllVacations, updateVacation } from "../../DB/queries/vacations.queries";
+import {
+  addVacation,
+  deleteVacationById,
+  getAllVacations,
+  updateVacation,
+} from "../../DB/queries/vacations.queries";
 import { JwtPayloadModel } from "../users/models/JwtPayload.model";
 import { VacationModel } from "./Vacation.model";
 
@@ -32,9 +37,13 @@ vacationsRouter.get(
   ) => {
     const { isAdmin }: any = req.user;
 
-    const vacations = await getAllVacations();
-
-    res.send({ isAdmin, vacations });
+    try {
+      const vacations = await getAllVacations();
+      res.send({ isAdmin, vacations });
+    } catch (err) {
+      res.sendStatus(500);
+      return;
+    }
   }
 );
 
@@ -44,11 +53,6 @@ vacationsRouter.post(
     req: Request<Partial<VacationModel>>,
     res: Response<VacationModel | string>
   ) => {
-    if (!req.user) {
-      res.status(401).send("unauthorized");
-      return;
-    }
-
     const { isAdmin }: any = req.user;
 
     if (!isAdmin) {
@@ -59,7 +63,7 @@ vacationsRouter.post(
     const { description, destination, image, startDate, endDate, price } =
       req.body;
 
-    const partialNewVacation = {
+    const partialNewVacation: Partial<VacationModel> = {
       description,
       destination,
       image,

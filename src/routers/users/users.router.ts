@@ -4,7 +4,6 @@ import { Secret, sign } from "jsonwebtoken";
 import { promisify } from "util";
 import { addUser, getUserByUsername } from "../../DB/queries/users.queries";
 import { JwtPayloadModel } from "./models/JwtPayload.model";
-import { NecessaryDetailsUserModel } from "./models/NecessaryDetailsUser.model";
 
 export const usersRouter = Router();
 
@@ -19,7 +18,12 @@ async function createJwt(payload: JwtPayloadModel): Promise<any> {
 usersRouter.post(
   "/register",
   async (
-    req: Request<NecessaryDetailsUserModel>,
+    req: Request<{
+      firstName: string;
+      lastName: string;
+      username: string;
+      password: string;
+    }>,
     res: Response<{ jwt: string } | string>
   ) => {
     const { firstName, lastName, username, password } = req.body;
