@@ -27,38 +27,54 @@ usersRouter.post(
     res: Response<{ jwt: string } | string>
   ) => {
     const { firstName, lastName, username, password } = req.body;
-
-    const user = await getUserByUsername(username);
-
-    if (user) {
-      res.status(400).send("user already exists");
-      return;
+    if (!firstName) {
+      return res.status(400).send("You have to specify first name");
+    }
+    if (!lastName) {
+      return res.status(400).send("You have to specify last name");
+    }
+    if (!username) {
+      return res.status(400).send("You have to specify username");
+    }
+    if (!password) {
+      return res.status(400).send("You have to specify password");
     }
 
-    const saltRounds = 2;
-    const salt = await genSalt(saltRounds);
+    try {
+      const user = await getUserByUsername(username);
 
-    const encryptedPassword = await hash(password, salt);
+      if (user) {
+        res.status(400).send("user already exists");
+        return;
+      }
 
-    const newUser = {
-      firstName,
-      lastName,
-      username,
-      encryptedPassword,
-    };
+      const saltRounds = 2;
+      const salt = await genSalt(saltRounds);
 
-    const newUserId = await addUser(newUser);
+      const encryptedPassword = await hash(password, salt);
 
-    const jwtPayload: JwtPayloadModel = {
-      id: newUserId,
-      firstName,
-      lastName,
-      username,
-      isAdmin: 0,
-    };
+      const newUser = {
+        firstName,
+        lastName,
+        username,
+        encryptedPassword,
+      };
 
-    const jwt = await createJwt(jwtPayload);
-    res.send({ jwt });
+      const newUserId = await addUser(newUser);
+
+      const jwtPayload: JwtPayloadModel = {
+        id: newUserId,
+        firstName,
+        lastName,
+        username,
+        isAdmin: 0,
+      };
+
+      const jwt = await createJwt(jwtPayload);
+      res.send({ jwt });
+    } catch (error) {
+      return res.sendStatus(500);
+    }
   }
 );
 
@@ -69,29 +85,39 @@ usersRouter.post(
     res: Response<{ jwt: string } | string>
   ) => {
     const { username, password } = req.body;
-
-    const user = await getUserByUsername(username);
-    if (!user) {
-      res.status(401).send("username and password don't match");
-      return;
+    if (!username) {
+      res.status(400).send("you have to specify username");
+    }
+    if (!password) {
+      res.status(400).send("you have to specify password");
     }
 
-    const { id, firstName, lastName, encryptedPassword, isAdmin } = user;
-    const isPasswordCorrect = await compare(password, encryptedPassword);
-    if (!isPasswordCorrect) {
-      res.status(401).send("username and password don't match");
-      return;
+    try {
+      const user = await getUserByUsername(username);
+      if (!user) {
+        res.status(401).send("username and password don't match");
+        return;
+      }
+
+      const { id, firstName, lastName, encryptedPassword, isAdmin } = user;
+      const isPasswordCorrect = await compare(password, encryptedPassword);
+      if (!isPasswordCorrect) {
+        res.status(401).send("username and password don't match");
+        return;
+      }
+
+      const jwtPayload: JwtPayloadModel = {
+        id,
+        firstName,
+        lastName,
+        username,
+        isAdmin,
+      };
+
+      const jwt = await createJwt(jwtPayload);
+      res.send({ jwt });
+    } catch (error) {
+      return res.sendStatus(500);
     }
-
-    const jwtPayload: JwtPayloadModel = {
-      id,
-      firstName,
-      lastName,
-      username,
-      isAdmin,
-    };
-
-    const jwt = await createJwt(jwtPayload);
-    res.send({ jwt });
   }
 );

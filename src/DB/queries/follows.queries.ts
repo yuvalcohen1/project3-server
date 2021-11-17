@@ -1,8 +1,6 @@
 import { RowDataPacket } from "mysql2";
 import { db } from "../db";
 
-
-
 export async function addFollow(userId: number, vacationId: number) {
   await db.query("INSERT INTO follows (userId, vacationId) VALUES (?, ?)", [
     userId,

@@ -41,8 +41,7 @@ vacationsRouter.get(
       const vacations = await getAllVacations();
       res.send({ isAdmin, vacations });
     } catch (err) {
-      res.sendStatus(500);
-      return;
+      return res.sendStatus(500);
     }
   }
 );
@@ -56,8 +55,7 @@ vacationsRouter.post(
     const { isAdmin }: any = req.user;
 
     if (!isAdmin) {
-      res.status(401).send("you are not allowed to add a vacation");
-      return;
+      return res.status(401).send("you are not allowed to add a vacation");
     }
 
     const { description, destination, image, startDate, endDate, price } =
@@ -72,20 +70,24 @@ vacationsRouter.post(
       price,
     };
 
-    const id = await addVacation(partialNewVacation);
+    try {
+      const id = await addVacation(partialNewVacation);
 
-    const fullNewVacation: VacationModel = {
-      id,
-      description,
-      destination,
-      startDate,
-      endDate,
-      image,
-      price,
-      followersAmount: 0,
-    };
+      const fullNewVacation: VacationModel = {
+        id,
+        description,
+        destination,
+        startDate,
+        endDate,
+        image,
+        price,
+        followersAmount: 0,
+      };
 
-    res.send(fullNewVacation);
+      res.send(fullNewVacation);
+    } catch (err) {
+      return res.sendStatus(500);
+    }
   }
 );
 
@@ -95,11 +97,6 @@ vacationsRouter.put(
     req: Request<Partial<VacationModel>>,
     res: Response<VacationModel | string>
   ) => {
-    if (!req.user) {
-      res.status(401).send("unauthorized");
-      return;
-    }
-
     const { isAdmin }: any = req.user;
 
     if (!isAdmin) {
@@ -109,7 +106,7 @@ vacationsRouter.put(
 
     const { id } = req.params;
     if (!id) {
-      res.status(400).send("you have to specify the id of the vacation");
+      res.status(400).send("you have to specify the vacation id");
       return;
     }
 
@@ -126,25 +123,24 @@ vacationsRouter.put(
       price,
     };
 
-    const isVacationUpdated = await updateVacation(updatingVacationDetails);
+    try {
+      const isVacationUpdated = await updateVacation(updatingVacationDetails);
 
-    if (!isVacationUpdated) {
-      res.status(400).send("Vacation has not been updated, please try again");
-      return;
+      if (!isVacationUpdated) {
+        res.status(400).send("Vacation has not been updated, please try again");
+        return;
+      }
+
+      res.send("Vacation has been updated successfully!");
+    } catch (err) {
+      res.sendStatus(500);
     }
-
-    res.send("Vacation has been updated successfully!");
   }
 );
 
 vacationsRouter.delete(
   "/delete-vacation/:id",
   async (req: Request<{ id: number }>, res: Response<string>) => {
-    if (!req.user) {
-      res.status(401).send("unauthorized");
-      return;
-    }
-
     const { isAdmin }: any = req.user;
 
     if (!isAdmin) {
@@ -154,16 +150,20 @@ vacationsRouter.delete(
 
     const { id } = req.params;
     if (!id) {
-      res.status(400).send("you have to specify the id of the vacation");
+      res.status(400).send("you have to specify the vacation id");
       return;
     }
 
-    const isVacationDeleted = await deleteVacationById(id);
-    if (!isVacationDeleted) {
-      res.status(400).send("Vacation has not been deleted, please try again");
-      return;
-    }
+    try {
+      const isVacationDeleted = await deleteVacationById(id);
+      if (!isVacationDeleted) {
+        res.status(400).send("Vacation has not been deleted, please try again");
+        return;
+      }
 
-    res.send("Vacation has been deleted successfully!");
+      res.send("Vacation has been deleted successfully!");
+    } catch (err) {
+      res.sendStatus(500);
+    }
   }
 );

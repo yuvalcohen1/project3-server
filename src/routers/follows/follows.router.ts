@@ -17,20 +17,24 @@ followsRouter.post(
     const vacationsIdAsNumber = Number(vacationId);
 
     if (!userId || !vacationId) {
-      res.status(400).send("you have to specify the userId and the vacationId");
+      res.status(400).send("you have to specify userId and vacationId");
       return;
     }
 
-    const isfollowersAmountUpdated = await incrementFollowersAmount(
-      vacationsIdAsNumber
-    );
-    if (!isfollowersAmountUpdated) {
-      res.status(400).send("followersAmount has not been updated, try again");
-      return;
+    try {
+      const isfollowersAmountUpdated = await incrementFollowersAmount(
+        vacationsIdAsNumber
+      );
+      if (!isfollowersAmountUpdated) {
+        res.status(400).send("followersAmount has not been updated, try again");
+        return;
+      }
+
+      await addFollow(userIdAsNumber, vacationsIdAsNumber);
+
+      res.end();
+    } catch (error) {
+      return res.sendStatus(500);
     }
-
-    await addFollow(userIdAsNumber, vacationsIdAsNumber);
-
-    res.end();
   }
 );
