@@ -16,3 +16,19 @@ export async function incrementFollowersAmount(vacationId: number) {
   );
   return affectedRows as number;
 }
+
+export async function deleteFollow(userId: number, vacationId: number) {
+  const [{ affectedRows }]: any = await db.query(
+    "DELETE FROM follows WHERE userId = ? AND vacationId = ?",
+    [userId, vacationId]
+  );
+  return affectedRows as number;
+}
+
+export async function decrementFollowersAmount(vacationId: number) {
+  const [{ affectedRows }]: any = await db.query(
+    "UPDATE vacations SET followersAmount = followersAmount - 1 WHERE id = ?;",
+    [vacationId]
+  );
+  return affectedRows as number;
+}
