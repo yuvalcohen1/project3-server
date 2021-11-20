@@ -4,6 +4,7 @@ import {
   addFollow,
   decrementFollowersAmount,
   deleteFollow,
+  getFollowedVacationIdsByFollowingUserId,
   incrementFollowersAmount,
 } from "../../DB/queries/follows.queries";
 
@@ -23,6 +24,22 @@ followsRouter.use(function (err: any, req: any, res: any, next: any) {
     res.status(401).send("invalid token...");
   }
 });
+
+followsRouter.get(
+  "/:userId",
+  async (req: Request<{ userId: number }>, res: Response) => {
+    const { userId } = req.params;
+
+    try {
+      const vacationIds = await getFollowedVacationIdsByFollowingUserId(userId);
+
+      res.send({ vacationIds });
+    } catch (error) {
+      res.sendStatus(500);
+      return;
+    }
+  }
+);
 
 followsRouter.post(
   "/add-follow/:vacationId",

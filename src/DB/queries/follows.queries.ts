@@ -1,5 +1,12 @@
-import { RowDataPacket } from "mysql2";
 import { db } from "../db";
+
+export async function getFollowedVacationIdsByFollowingUserId(userId: number) {
+  const vacationIds = await db.query(
+    "SELECT vacationId FROM vacation_management_system.follows WHERE userId = ?;",
+    [userId]
+  );
+  return vacationIds;
+}
 
 export async function addFollow(userId: number, vacationId: number) {
   await db.query("INSERT INTO follows (userId, vacationId) VALUES (?, ?)", [

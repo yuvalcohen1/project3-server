@@ -33,13 +33,13 @@ vacationsRouter.get(
   "/",
   async (
     req: Request<JwtPayloadModel>,
-    res: Response<{ isAdmin: number; vacations: VacationModel[] }>
+    res: Response<{ id: number; isAdmin: number; vacations: VacationModel[] }>
   ) => {
-    const { isAdmin }: any = req.user;
+    const { id, isAdmin }: any = req.user;
 
     try {
       const vacations = await getAllVacations();
-      res.send({ isAdmin, vacations });
+      res.send({ id, isAdmin, vacations });
     } catch (err) {
       return res.sendStatus(500);
     }
